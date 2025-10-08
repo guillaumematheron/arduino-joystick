@@ -12,7 +12,7 @@ impl SerialConnection {
             flow_control: serialport::FlowControl::None,
             parity: serialport::Parity::None,
             stop_bits: serialport::StopBits::One,
-            timeout: time::Duration::from_millis(20),
+            timeout: time::Duration::from_millis(200),
         };
 
         let port = serialport::open_with_settings(port, &settings)?;

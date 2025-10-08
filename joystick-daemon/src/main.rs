@@ -21,6 +21,8 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         joystick.device_path()?.to_string_lossy()
     );
 
+    joystick.synchronise()?;
+
     loop {
         let button_state = serial.read_button_state()?;
 
@@ -40,19 +42,19 @@ fn button_map(i: usize) -> joystick::Button {
     use joystick::Button::*;
     match i {
         0 => LeftNorth,
-        1 => LeftWest,
+        1 => LeftSouth,
         2 => LeftEast,
-        3 => LeftSouth,
+        3 => LeftWest,
         4 => LeftSpecial,
-        5 => RightSouth,
-        6 => RightSpecial,
+        5 => RightNorth,
+        6 => RightSouth,
         7 => RightEast,
         8 => RightWest,
-        9 => RightNorth,
-        10 => R2,
+        9 => RightSpecial,
+        10 => L1,
         11 => R1,
         12 => L2,
-        13 => L1,
+        13 => R2,
         _ => unreachable!(),
     }
 }
