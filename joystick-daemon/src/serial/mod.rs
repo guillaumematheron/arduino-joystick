@@ -77,6 +77,20 @@ impl SerialConnection {
             read += t;
         }
     }
+
+    pub fn write(&mut self, buf: &[u8]) -> Result<(), std::io::Error> {
+        self.port.write_all(buf)
+    }
+
+    
+    pub fn flush_input(&mut self) -> Result<(), std::io::Error> {
+        let n = self.port.bytes_to_read()?;  // number of bytes waiting
+        if n > 0 {
+            let mut buf = vec![0u8; n as usize];
+            let _ = self.port.read_exact(&mut buf);
+        }
+        Ok(())
+    }
 }
 
 pub struct ButtonState {

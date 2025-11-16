@@ -2,6 +2,7 @@ use std::{env, error};
 
 mod joystick;
 mod serial;
+mod flightgear;
 
 fn main() -> Result<(), Box<dyn error::Error>> {
     let args: Vec<_> = env::args().collect();
@@ -24,6 +25,26 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     joystick.synchronise()?;
 
     loop {
+        // === NEW: read lighting from FlightGear ===
+        let panel_light = flightgear::get_property_float("/controls/lighting/main-panel-norm")
+            .unwrap_or(0.0);
+
+        let gear_warning = flightgear::get_property_bool("/ECAM/warnings/landing-gear-warning-light")
+            .unwrap_or(false)
+            || (flightgear::get_property_int("/controls/switches/annun-test")
+            .unwrap_or(0) == 1);
+
+        // Create a tiny packet: two floats separated by comma
+        let out = format!("X{:.2},{:.0}Y\n", panel_light, if gear_warning {1} else {0});
+
+        // Send to Arduino
+        serial.write(out.as_bytes())?;
+        println!("{}", out);
+        //println!(".");
+        
+        // ===========================================
+    
+        serial.flush_input()?; // clear everything before polling FG
         let button_state = serial.read_button_state()?;
 
         for (i, &pressed) in button_state.pressed.iter().enumerate() {
@@ -31,6 +52,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         }
 
         for (i, &value) in button_state.joysticks.iter().enumerate() {
+            println!("a {}", value);
             joystick.move_axis(axis_map(i), value as i32 - 512)?;
         }
 
